@@ -1,11 +1,11 @@
 # spring-boot-jwt-starter
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub](https://img.shields.io/badge/GitHub-labui09%2Fspring--boot--jwt--starter-lightgrey?logo=github)](https://github.com/labui09/spring-boot-jwt-starter)
+[![GitHub](https://img.shields.io/badge/GitHub-Fallen-leaves089%2Fspring--boot--jwt--starter-lightgrey?logo=github)](https://github.com/Fallen-leaves089/spring-boot-jwt-starter)
 
 Spring Boot JWT Starter | 白名单 | 路径遍历防护 | Token 过期区分
 
-MIT License. Copyright (c) 2024 labui09.
+MIT License. Copyright (c) 2024 Fallen-leaves089.
 
 ---
 
@@ -26,7 +26,7 @@ MIT License. Copyright (c) 2024 labui09.
 
 ```xml
 <dependency>
-    <groupId>io.github.labui09</groupId>
+    <groupId>io.github.Fallen-leaves089</groupId>
     <artifactId>spring-boot-jwt-starter</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -35,7 +35,7 @@ MIT License. Copyright (c) 2024 labui09.
 ### Gradle
 
 ```gradle
-implementation 'io.github.labui09:spring-boot-jwt-starter:1.0.0'
+implementation 'io.github.Fallen-leaves089:spring-boot-jwt-starter:1.0.0'
 ```
 
 > 需要 Spring Boot 3.2.x + Java 17。
