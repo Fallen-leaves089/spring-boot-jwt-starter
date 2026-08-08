@@ -1,4 +1,4 @@
-package io.github.labui09.jwt.starter;
+package io.github.fallenleaves089.jwt.starter;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

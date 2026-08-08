@@ -1,4 +1,4 @@
-package io.github.labui09.jwt.starter;
+package io.github.fallenleaves089.jwt.starter;
 
 /**
  * Token 过期时的附加信息，嵌入 401 响应的 data 字段。
