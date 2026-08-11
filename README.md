@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-Fallen-leaves089%2Fspring--boot--jwt--starter-lightgrey?logo=github)](https://github.com/Fallen-leaves089/spring-boot-jwt-starter)
+[![Build](https://img.shields.io/github/actions/workflow/status/Fallen-leaves089/spring-boot-jwt-starter/ci.yml?branch=main&logo=github)](https://github.com/Fallen-leaves089/spring-boot-jwt-starter/actions)
 
 Spring Boot JWT Starter | 白名单 | 路径遍历防护 | Token 过期区分
 
@@ -93,6 +94,22 @@ public Map<String, Object> profile(HttpServletRequest request) {
     // 查询用户信息...
     return Map.of("code", 200, "data", user);
 }
+```
+
+### 4. 用 curl 验证
+
+```bash
+# 登录获取 Token
+curl -s -X POST http://localhost:8080/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"123456"}'
+
+# 携带 Token 访问受保护接口
+curl -s http://localhost:8080/api/user/profile \
+  -H "Authorization: Bearer <上一步返回的 token>"
+
+# 未携带 Token 时返回 401
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/api/user/profile
 ```
 
 ---
