@@ -27,7 +27,7 @@ MIT License. Copyright (c) 2024 Fallen-leaves089.
 
 ```xml
 <dependency>
-    <groupId>io.github.Fallen-leaves089</groupId>
+    <groupId>io.github.fallenleaves089</groupId>
     <artifactId>spring-boot-jwt-starter</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -36,7 +36,7 @@ MIT License. Copyright (c) 2024 Fallen-leaves089.
 ### Gradle
 
 ```gradle
-implementation 'io.github.Fallen-leaves089:spring-boot-jwt-starter:1.0.0'
+implementation 'io.github.fallenleaves089:spring-boot-jwt-starter:1.0.0'
 ```
 
 > 需要 Spring Boot 3.2.x + Java 17。
