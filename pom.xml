@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>spring-boot-jwt-starter</name>
-    <description>Spring Boot 零配置 JWT 鉴权 Starter — Token 解析、路径白名单、路径遍历防护、过期区分</description>
+    <description>Zero-configuration Spring Boot JWT starter: token parsing, path whitelist, path traversal protection, and expired-token signaling</description>
     <url>https://github.com/fallen-leaves089/spring-boot-jwt-starter</url>
 
     <licenses>
