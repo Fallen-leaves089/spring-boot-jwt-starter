@@ -1,12 +1,12 @@
 # spring-boot-jwt-starter
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub](https://img.shields.io/badge/GitHub-Fallen-leaves089%2Fspring--boot--jwt--starter-lightgrey?logo=github)](https://github.com/Fallen-leaves089/spring-boot-jwt-starter)
-[![Build](https://img.shields.io/github/actions/workflow/status/Fallen-leaves089/spring-boot-jwt-starter/ci.yml?branch=main&logo=github)](https://github.com/Fallen-leaves089/spring-boot-jwt-starter/actions)
+[![GitHub](https://img.shields.io/badge/GitHub-fallen-leaves089%2Fspring--boot--jwt--starter-lightgrey?logo=github)](https://github.com/fallen-leaves089/spring-boot-jwt-starter)
+[![Build](https://img.shields.io/github/actions/workflow/status/fallen-leaves089/spring-boot-jwt-starter/ci.yml?branch=main&logo=github)](https://github.com/fallen-leaves089/spring-boot-jwt-starter/actions)
 
 Spring Boot JWT Starter | 白名单 | 路径遍历防护 | Token 过期区分
 
-MIT License. Copyright (c) 2024 Fallen-leaves089.
+MIT License. Copyright (c) 2024 fallen-leaves089.
 
 ---
 

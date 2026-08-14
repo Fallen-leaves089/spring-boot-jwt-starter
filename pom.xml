@@ -11,7 +11,7 @@
 
     <name>spring-boot-jwt-starter</name>
     <description>Spring Boot 零配置 JWT 鉴权 Starter — Token 解析、路径白名单、路径遍历防护、过期区分</description>
-    <url>https://github.com/Fallen-leaves089/spring-boot-jwt-starter</url>
+    <url>https://github.com/fallen-leaves089/spring-boot-jwt-starter</url>
 
     <licenses>
         <license>
