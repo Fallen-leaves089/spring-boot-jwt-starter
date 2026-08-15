@@ -23,11 +23,20 @@ MIT License. Copyright (c) 2024 fallen-leaves089.
 
 ## 依赖坐标
 
+本项目通过 [JitPack](https://jitpack.io) 发布，使用时先添加 JitPack 仓库。
+
 ### Maven
 
 ```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
 <dependency>
-    <groupId>io.github.fallenleaves089</groupId>
+    <groupId>com.github.fallen-leaves089</groupId>
     <artifactId>spring-boot-jwt-starter</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -36,7 +45,15 @@ MIT License. Copyright (c) 2024 fallen-leaves089.
 ### Gradle
 
 ```gradle
-implementation 'io.github.fallenleaves089:spring-boot-jwt-starter:1.0.0'
+dependencyResolutionManagement {
+    repositories {
+        maven("https://jitpack.io")
+    }
+}
+
+dependencies {
+    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.0.0")
+}
 ```
 
 > 需要 Spring Boot 3.2.x + Java 17。
@@ -179,6 +196,25 @@ spring-boot-jwt-starter
 ```
 
 通过 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 机制自动加载，无需 `@ComponentScan`。
+
+---
+
+## 发布
+
+JitPack 会根据 Git tag 自动构建发布。
+
+```bash
+git tag 1.0.0
+git push origin 1.0.0
+```
+
+随后可使用：
+
+```text
+https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.0.0
+```
+
+发布到 Maven Central 需要 OSSRH 凭据、签名制品以及 source/javadoc jar。
 
 ---
 

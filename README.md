@@ -25,11 +25,20 @@ MIT License. Copyright (c) 2024 fallen-leaves089.
 
 ## Dependency coordinates
 
+This project is published through [JitPack](https://jitpack.io). Add the JitPack repository first.
+
 ### Maven
 
 ```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
 <dependency>
-    <groupId>io.github.fallenleaves089</groupId>
+    <groupId>com.github.fallen-leaves089</groupId>
     <artifactId>spring-boot-jwt-starter</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -38,7 +47,15 @@ MIT License. Copyright (c) 2024 fallen-leaves089.
 ### Gradle
 
 ```gradle
-implementation 'io.github.fallenleaves089:spring-boot-jwt-starter:1.0.0'
+dependencyResolutionManagement {
+    repositories {
+        maven("https://jitpack.io")
+    }
+}
+
+dependencies {
+    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.0.0")
+}
 ```
 
 > Requires Spring Boot 3.2.x and Java 17.
@@ -182,6 +199,25 @@ spring-boot-jwt-starter
 ```
 
 Loaded automatically through `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`; no `@ComponentScan` required.
+
+---
+
+## Releasing
+
+JitPack builds a release automatically from a Git tag.
+
+```bash
+git tag 1.0.0
+git push origin 1.0.0
+```
+
+Then use:
+
+```text
+https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.0.0
+```
+
+Maven Central publishing requires OSSRH credentials, signed artifacts, and source/javadoc jars.
 
 ---
 
