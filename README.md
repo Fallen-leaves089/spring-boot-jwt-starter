@@ -1,7 +1,6 @@
 # spring-boot-jwt-starter
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![GitHub](https://img.shields.io/badge/GitHub-fallen-leaves089%2Fspring--boot--jwt--starter-lightgrey?logo=github)](https://github.com/fallen-leaves089/spring-boot-jwt-starter)
 [![Build](https://img.shields.io/github/actions/workflow/status/fallen-leaves089/spring-boot-jwt-starter/ci.yml?branch=main&logo=github)](https://github.com/fallen-leaves089/spring-boot-jwt-starter/actions)
 
 Spring Boot JWT Starter | Path whitelist | Path traversal protection | Expired-token signaling
