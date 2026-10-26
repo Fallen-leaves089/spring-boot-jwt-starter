@@ -3,20 +3,46 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Build](https://img.shields.io/github/actions/workflow/status/fallen-leaves089/spring-boot-jwt-starter/ci.yml?branch=main&logo=github)](https://github.com/fallen-leaves089/spring-boot-jwt-starter/actions)
 
-Spring Boot JWT Starter | 白名单 | 路径遍历防护 | Token 过期区分
+Spring Boot JWT Starter | 白名单 | 路径遍历防护 | 401 原因区分
 
 MIT License. Copyright (c) 2024 fallen-leaves089.
+
+> 需要 JWT 和安全过滤器一起用？使用
+> [`spring-boot-security-starter`](https://github.com/fallen-leaves089/spring-boot-security-starter)。
+
+## 30 秒看懂
+
+- **解决什么**：给 Spring MVC 项目加一层轻量 JWT 鉴权，不用自己写拦截器。
+- **你能得到**：Token 校验、显式白名单、路径遍历防护、401 原因区分、`userId` 注入。
+- **适合**：Spring Boot 3.2.x / Java 17 的 Servlet 应用。
+- **不适合**：WebFlux/响应式应用、完整用户体系、分布式 Token 撤销。
+
+## 最短演示
+
+```yaml
+jwt:
+  secret: "${JWT_SECRET:replace-with-a-32-byte-secret}"
+  exclude-paths:
+    - /api/login
+```
+
+```java
+String token = jwtUtil.generateToken(1001L, "13800138000");
+Long userId = (Long) request.getAttribute("userId");
+```
+
+可运行的 Controller 和 `curl` 示例见[快速开始](#快速开始)。
 
 ---
 
 ## 功能
 
-- **零代码接入**：引入依赖 + 配置 `jwt.secret` 即可启用
+- **零代码接入**：引入依赖，配置 `jwt.secret`，并在 `jwt.exclude-paths` 中列出公开路径
 - **自动 Token 校验**：拦截所有请求，白名单路径跳过，其余校验 Authorization 头
 - **路径遍历攻击防护**：拒绝含 `../` 或 `..\\` 的恶意路径
-- **过期区分**：401 响应中附带 `TOKEN_EXPIRED` 标识，前端可据此区分"未登录"和"Token 过期"
+- **401 原因区分**：返回 `TOKEN_MISSING`、`TOKEN_INVALID` 或 `TOKEN_EXPIRED`，前端可据此决定是否重新登录
 - **userId 注入**：校验通过后将 userId 注入 `request.setAttribute("userId", ...)`
-- **JJWT 0.12.x**：使用最新版 JJWT，密钥自动 HMAC-SHA
+- **JJWT 0.13.x**：使用 JJWT 0.13.x 进行 HMAC-SHA 签名/解析
 
 ---
 
@@ -37,7 +63,7 @@ MIT License. Copyright (c) 2024 fallen-leaves089.
 <dependency>
     <groupId>com.github.fallen-leaves089</groupId>
     <artifactId>spring-boot-jwt-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -51,7 +77,7 @@ dependencyResolutionManagement {
 }
 
 dependencies {
-    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.0.0")
+    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.1.0")
 }
 ```
 
@@ -67,14 +93,15 @@ dependencies {
 # application.yml
 jwt:
   secret: "your-256-bit-secret-key-at-least-32-characters-long"
+  exclude-paths:
+    - /api/login
+    - /api/register
+    - /api/sms/*
+    - /swagger**
+    - /v3/**
 ```
 
-仅此一行，即可启用 JWT 鉴权。默认白名单路径：
-- `/api/login`
-- `/api/register`
-- `/api/sms/*`
-- `/swagger**`
-- `/v3/**`
+配置密钥后即启用鉴权。默认不放行任何路径，请显式列出所有公开接口。
 
 ### 2. 生成 Token
 
@@ -152,7 +179,7 @@ jwt:
   # userId 在 request attribute 中的 key，默认 "userId"
   user-id-attribute: "userId"
 
-  # 白名单路径（支持 * 通配符），这些路径不校验 Token
+  # 白名单路径（支持 * 通配符），默认空；这些路径不校验 Token
   exclude-paths:
     - /api/login
     - /api/register
@@ -166,12 +193,20 @@ jwt:
 
 ## 401 响应格式
 
-未登录或 Token 无效/过期时返回：
+响应体通过 `data.code` 区分原因：
+
+| 情况 | `data.code` | `data.message` |
+|------|-------------|----------------|
+| 未携带或格式不匹配的 `Authorization` 头 | `TOKEN_MISSING` | 请先登录 |
+| Token 格式错误或无效 | `TOKEN_INVALID` | Token 无效 |
+| Token 已过期 | `TOKEN_EXPIRED` | Token 已过期 |
+
+Token 过期时示例：
 
 ```json
 {
   "code": 401,
-  "msg": "Token无效或已过期",
+  "msg": "Token已过期",
   "data": {
     "code": "TOKEN_EXPIRED",
     "message": "Token已过期"
@@ -179,7 +214,7 @@ jwt:
 }
 ```
 
-前端可根据 `data.code == "TOKEN_EXPIRED"` 判断是否需要引导用户重新登录。
+前端收到以上任一 `data.code` 都应引导重新登录；`TOKEN_EXPIRED` 还可用于触发刷新 Token 流程。
 
 ---
 
@@ -200,23 +235,23 @@ spring-boot-jwt-starter
 
 ## 发布
 
-JitPack 会根据 Git tag 自动构建发布。
+JitPack 会根据 Git tag 自动构建发布。Git tag 使用 `v1.1.0`，上面的依赖坐标仍使用 `1.1.0`。
 
 ```bash
-git tag 1.0.0
-git push origin 1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
 随后可使用：
 
 ```text
-https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.0.0
+https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.1.0
 ```
 
-发布到 Maven Central 需要 OSSRH 凭据、签名制品以及 source/javadoc jar。
+发布到 Maven Central 需要仓库凭据、签名制品以及 source/javadoc jar。
 
 ---
 
 ## GitHub About 建议
 
-`Spring Boot JWT Starter | 白名单 | 路径遍历防护 | Token 过期区分`
+`Spring Boot JWT Starter | 白名单 | 路径遍历防护 | 401 原因区分`

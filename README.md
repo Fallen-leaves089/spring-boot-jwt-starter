@@ -3,22 +3,48 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Build](https://img.shields.io/github/actions/workflow/status/fallen-leaves089/spring-boot-jwt-starter/ci.yml?branch=main&logo=github)](https://github.com/fallen-leaves089/spring-boot-jwt-starter/actions)
 
-Spring Boot JWT Starter | Path whitelist | Path traversal protection | Expired-token signaling
+Spring Boot JWT Starter | Path whitelist | Path traversal protection | Distinct 401 reasons
 
 MIT License. Copyright (c) 2024 fallen-leaves089.
 
 [中文说明](README.zh-CN.md)
 
+> Need JWT and the security filters together? Use
+> [`spring-boot-security-starter`](https://github.com/fallen-leaves089/spring-boot-security-starter).
+
+## 30-second overview
+
+- **Problem solved:** adds JWT authentication to a Spring MVC app without writing an interceptor.
+- **What you get:** token validation, explicit path whitelist, path-traversal rejection, distinct 401 reasons, and `userId` injection.
+- **Use it when:** you have a Spring Boot 3.2.x / Java 17 servlet app and want a small JWT layer.
+- **Not for:** WebFlux/reactive apps, a complete user/login system, or distributed token revocation.
+
+## Shortest demo
+
+```yaml
+jwt:
+  secret: "${JWT_SECRET:replace-with-a-32-byte-secret}"
+  exclude-paths:
+    - /api/login
+```
+
+```java
+String token = jwtUtil.generateToken(1001L, "13800138000");
+Long userId = (Long) request.getAttribute("userId");
+```
+
+See [Quick start](#quick-start) for a runnable controller and `curl` example.
+
 ---
 
 ## Features
 
-- **Zero-code integration**: add the dependency and configure `jwt.secret` to enable authentication.
+- **Zero-code integration**: add the dependency, set `jwt.secret`, and list public paths in `jwt.exclude-paths`.
 - **Automatic token validation**: intercepts all requests, skips whitelisted paths, and validates the `Authorization` header for the rest.
 - **Path traversal protection**: rejects malicious paths containing `../` or `..\\`.
-- **Expired-token signaling**: attaches a `TOKEN_EXPIRED` marker to 401 responses so clients can distinguish "not logged in" from "token expired".
+- **Distinct 401 reasons**: returns `TOKEN_MISSING`, `TOKEN_INVALID`, or `TOKEN_EXPIRED` so clients can decide whether to log in again.
 - **User ID injection**: after validation, injects `userId` into `request.setAttribute("userId", ...)`.
-- **JJWT 0.12.x**: uses the latest JJWT version with automatic HMAC-SHA signing.
+- **JJWT 0.13.x**: HMAC-SHA token signing and parsing.
 
 ---
 
@@ -39,7 +65,7 @@ This project is published through [JitPack](https://jitpack.io). Add the JitPack
 <dependency>
     <groupId>com.github.fallen-leaves089</groupId>
     <artifactId>spring-boot-jwt-starter</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -53,7 +79,7 @@ dependencyResolutionManagement {
 }
 
 dependencies {
-    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.0.0")
+    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.1.0")
 }
 ```
 
@@ -69,15 +95,15 @@ dependencies {
 # application.yml
 jwt:
   secret: "your-256-bit-secret-key-at-least-32-characters-long"
+  exclude-paths:
+    - /api/login
+    - /api/register
+    - /api/sms/*
+    - /swagger**
+    - /v3/**
 ```
 
-This single setting enables JWT authentication. Default whitelisted paths:
-
-- `/api/login`
-- `/api/register`
-- `/api/sms/*`
-- `/swagger**`
-- `/v3/**`
+Authentication is enabled after setting the secret. No path is excluded by default; list every public endpoint explicitly.
 
 ### 2. Generate a token
 
@@ -155,7 +181,7 @@ jwt:
   # Request attribute key for userId. Default: "userId".
   user-id-attribute: "userId"
 
-  # Whitelisted paths (supports * wildcards). These paths skip token validation.
+  # Whitelisted paths (supports * wildcards). Default: empty. These paths skip token validation.
   exclude-paths:
     - /api/login
     - /api/register
@@ -169,12 +195,20 @@ jwt:
 
 ## 401 response format
 
-When a request is unauthenticated, or the token is invalid/expired, the response is:
+The response body uses `data.code` to distinguish the reason:
+
+| Situation | `data.code` | `data.message` |
+|-----------|-------------|----------------|
+| Missing or unmatched `Authorization` header | `TOKEN_MISSING` | Please log in |
+| Malformed or invalid token | `TOKEN_INVALID` | Token is invalid |
+| Expired token | `TOKEN_EXPIRED` | Token has expired |
+
+Example for an expired token:
 
 ```json
 {
   "code": 401,
-  "msg": "Token无效或已过期",
+  "msg": "Token已过期",
   "data": {
     "code": "TOKEN_EXPIRED",
     "message": "Token已过期"
@@ -182,7 +216,7 @@ When a request is unauthenticated, or the token is invalid/expired, the response
 }
 ```
 
-Clients can check `data.code == "TOKEN_EXPIRED"` to decide whether the user should be redirected to log in again.
+Clients should redirect to login for any of these values; `TOKEN_EXPIRED` additionally indicates that a refresh-token flow may be useful.
 
 ---
 
@@ -203,23 +237,23 @@ Loaded automatically through `META-INF/spring/org.springframework.boot.autoconfi
 
 ## Releasing
 
-JitPack builds a release automatically from a Git tag.
+JitPack builds a release automatically from a Git tag. Use the `v` prefix for the tag; the dependency coordinate above remains `1.1.0`.
 
 ```bash
-git tag 1.0.0
-git push origin 1.0.0
+git tag v1.1.0
+git push origin v1.1.0
 ```
 
 Then use:
 
 ```text
-https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.0.0
+https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.1.0
 ```
 
-Maven Central publishing requires OSSRH credentials, signed artifacts, and source/javadoc jars.
+Publishing to Maven Central requires repository credentials, signed artifacts, and source/javadoc jars.
 
 ---
 
 ## GitHub About
 
-`Spring Boot JWT Starter | Path whitelist | Path traversal protection | Expired-token signaling`
+`Spring Boot JWT Starter | Path whitelist | Path traversal protection | Distinct 401 reasons`

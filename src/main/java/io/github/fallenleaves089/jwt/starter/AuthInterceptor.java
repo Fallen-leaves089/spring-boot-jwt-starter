@@ -16,7 +16,7 @@ import java.util.Map;
  *   <li>路径遍历攻击防护（拒绝含 ../ 的路径）</li>
  *   <li>前缀匹配白名单（支持 * 通配符）</li>
  *   <li>OPTIONS 预检请求自动放行</li>
- *   <li>Token 校验失败返回 401 + TOKEN_EXPIRED 标识</li>
+ *   <li>Token 校验失败时按原因返回 TOKEN_MISSING / TOKEN_INVALID / TOKEN_EXPIRED</li>
  *   <li>校验通过后将 userId 注入 request attribute</li>
  * </ul>
  */
@@ -59,19 +59,23 @@ public class AuthInterceptor implements HandlerInterceptor {
         // ── 验证 Token ──
         String authHeader = request.getHeader(properties.getHeader());
         if (authHeader == null || !authHeader.startsWith(properties.getTokenPrefix())) {
-            write401(response, "未登录或Token已过期");
+            write401(response, "未登录", "TOKEN_MISSING", "请先登录");
             return false;
         }
 
         String token = authHeader.substring(properties.getTokenPrefix().length()).trim();
         if (token.isEmpty()) {
-            write401(response, "Token不能为空");
+            write401(response, "Token不能为空", "TOKEN_INVALID", "Token无效");
             return false;
         }
 
         Long userId = jwtUtil.getUserId(token);
         if (userId == null) {
-            write401(response, "Token无效或已过期");
+            boolean expired = jwtUtil.isExpired(token);
+            write401(response,
+                    expired ? "Token已过期" : "Token无效",
+                    expired ? "TOKEN_EXPIRED" : "TOKEN_INVALID",
+                    expired ? "Token已过期" : "Token无效");
             return false;
         }
 
@@ -96,14 +100,14 @@ public class AuthInterceptor implements HandlerInterceptor {
         return false;
     }
 
-    /** 写入 401 响应，附带 TOKEN_EXPIRED 标识 */
-    private void write401(HttpServletResponse response, String message) throws Exception {
-        TokenExpiredData data = new TokenExpiredData();
+    /** 写入 401 响应，data.code 标明失败原因 */
+    private void write401(HttpServletResponse response, String message,
+                          String code, String dataMessage) throws Exception {
         response.setStatus(401);
         response.setContentType("application/json;charset=utf-8");
         response.getWriter().write(objectMapper.writeValueAsString(
                 Map.of("code", 401, "msg", message, "data", Map.of(
-                        "code", data.getCode(),
-                        "message", data.getMessage()))));
+                        "code", code,
+                        "message", dataMessage))));
     }
 }

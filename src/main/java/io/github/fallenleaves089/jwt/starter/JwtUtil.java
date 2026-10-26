@@ -1,6 +1,7 @@
 package io.github.fallenleaves089.jwt.starter;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -57,6 +58,24 @@ public class JwtUtil {
     }
 
     /**
+     * 判断 Token 是否已过期。
+     * 无效 Token 和无法解析的 Token 返回 false，由调用方按“无效”处理。
+     */
+    public boolean isExpired(String token) {
+        try {
+            Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(stripPrefix(token));
+            return false;
+        } catch (ExpiredJwtException e) {
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
      * 从 Token 中提取 userId。
      * 如果 Token 带有 Bearer 前缀会自动剥离。
      *
@@ -67,7 +86,14 @@ public class JwtUtil {
         Claims claims = parseToken(stripPrefix(token));
         if (claims != null) {
             String subject = claims.getSubject();
-            return subject != null ? Long.parseLong(subject) : null;
+            if (subject == null) {
+                return null;
+            }
+            try {
+                return Long.parseLong(subject);
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
         return null;
     }
