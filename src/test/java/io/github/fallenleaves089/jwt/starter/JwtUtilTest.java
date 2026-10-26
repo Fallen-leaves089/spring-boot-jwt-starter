@@ -5,8 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JwtUtilTest {
 
@@ -36,6 +38,7 @@ class JwtUtilTest {
     void getUserIdShouldReturnUserId() {
         String token = jwtUtil.generateToken(42L, "13800138000");
         assertEquals(42L, jwtUtil.getUserId(token));
+        assertFalse(jwtUtil.isExpired(token));
     }
 
     @Test
@@ -48,6 +51,7 @@ class JwtUtilTest {
     void parseTokenShouldReturnNullForInvalidToken() {
         assertNull(jwtUtil.parseToken("not-a-jwt"));
         assertNull(jwtUtil.getUserId("not-a-jwt"));
+        assertFalse(jwtUtil.isExpired("not-a-jwt"));
     }
 
     @Test
@@ -59,5 +63,6 @@ class JwtUtilTest {
         Thread.sleep(1100);
 
         assertNull(shortLived.parseToken(token));
+        assertTrue(shortLived.isExpired(token));
     }
 }
