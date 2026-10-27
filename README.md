@@ -41,6 +41,8 @@ See [Quick start](#quick-start) for a runnable controller and `curl` example.
 
 - **Zero-code integration**: add the dependency, set `jwt.secret`, and list public paths in `jwt.exclude-paths`.
 - **Automatic token validation**: intercepts all requests, skips whitelisted paths, and validates the `Authorization` header for the rest.
+- **Context-path aware**: `jwt.exclude-paths` entries are matched against the application-relative path, so they do not repeat `server.servlet.context-path`.
+- **Customizable token logic**: a user-defined `JwtUtil` bean is reused by the interceptor instead of creating a second instance.
 - **Path traversal protection**: rejects dot-dot path segments after up to three rounds of percent-decoding, including mixed-case and double-encoded forms.
 - **Secret validation**: startup fails fast with a clear message when `jwt.secret` is missing or shorter than 32 bytes.
 - **Distinct 401 reasons**: returns `TOKEN_MISSING`, `TOKEN_INVALID`, or `TOKEN_EXPIRED` so clients can decide whether to log in again.
@@ -66,7 +68,7 @@ This project is published through [JitPack](https://jitpack.io). Add the JitPack
 <dependency>
     <groupId>com.github.fallen-leaves089</groupId>
     <artifactId>spring-boot-jwt-starter</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
 </dependency>
 ```
 
@@ -80,7 +82,7 @@ dependencyResolutionManagement {
 }
 
 dependencies {
-    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.1.1")
+    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.1.2")
 }
 ```
 
@@ -182,7 +184,8 @@ jwt:
   # Request attribute key for userId. Default: "userId".
   user-id-attribute: "userId"
 
-# Whitelisted paths (supports * wildcards; all other characters are literal). Default: empty. These paths skip token validation.
+# Whitelisted paths relative to the application context (supports * wildcards;
+# all other characters are literal). Default: empty. These paths skip token validation.
   exclude-paths:
     - /api/login
     - /api/register
@@ -238,17 +241,17 @@ Loaded automatically through `META-INF/spring/org.springframework.boot.autoconfi
 
 ## Releasing
 
-JitPack builds a release automatically from a Git tag. Use the `v` prefix for the tag; the dependency coordinate above remains `1.1.1`.
+JitPack builds a release automatically from a Git tag. Use the `v` prefix for the tag; the dependency coordinate above remains `1.1.2`.
 
 ```bash
-git tag v1.1.1
-git push origin v1.1.1
+git tag v1.1.2
+git push origin v1.1.2
 ```
 
 Then use:
 
 ```text
-https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.1.1
+https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.1.2
 ```
 
 Publishing to Maven Central requires repository credentials, signed artifacts, and source/javadoc jars.

@@ -39,6 +39,8 @@ Long userId = (Long) request.getAttribute("userId");
 
 - **零代码接入**：引入依赖，配置 `jwt.secret`，并在 `jwt.exclude-paths` 中列出公开路径
 - **自动 Token 校验**：拦截所有请求，白名单路径跳过，其余校验 Authorization 头
+- **感知 context-path**：`jwt.exclude-paths` 按应用内相对路径匹配，不需要重复 `server.servlet.context-path`
+- **可替换 Token 实现**：用户自定义的 `JwtUtil` Bean 会被拦截器直接复用，不再创建第二个实例
 - **路径遍历攻击防护**：最多进行三轮百分号解码，拒绝混合大小写和双重编码的 `..` 路径段
 - **密钥启动校验**：`jwt.secret` 缺失或不足 32 字节时启动直接失败，并给出明确提示
 - **401 原因区分**：返回 `TOKEN_MISSING`、`TOKEN_INVALID` 或 `TOKEN_EXPIRED`，前端可据此决定是否重新登录
@@ -64,7 +66,7 @@ Long userId = (Long) request.getAttribute("userId");
 <dependency>
     <groupId>com.github.fallen-leaves089</groupId>
     <artifactId>spring-boot-jwt-starter</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
 </dependency>
 ```
 
@@ -78,7 +80,7 @@ dependencyResolutionManagement {
 }
 
 dependencies {
-    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.1.1")
+    implementation("com.github.fallen-leaves089:spring-boot-jwt-starter:1.1.2")
 }
 ```
 
@@ -180,7 +182,7 @@ jwt:
   # userId 在 request attribute 中的 key，默认 "userId"
   user-id-attribute: "userId"
 
-# 白名单路径（支持 * 通配符，其他字符按字面量处理），默认空；这些路径不校验 Token
+# 白名单路径（按应用内相对路径匹配，支持 * 通配符，其他字符按字面量处理），默认空；这些路径不校验 Token
   exclude-paths:
     - /api/login
     - /api/register
@@ -236,17 +238,17 @@ spring-boot-jwt-starter
 
 ## 发布
 
-JitPack 会根据 Git tag 自动构建发布。Git tag 使用 `v1.1.1`，上面的依赖坐标仍使用 `1.1.1`。
+JitPack 会根据 Git tag 自动构建发布。Git tag 使用 `v1.1.2`，上面的依赖坐标仍使用 `1.1.2`。
 
 ```bash
-git tag v1.1.1
-git push origin v1.1.1
+git tag v1.1.2
+git push origin v1.1.2
 ```
 
 随后可使用：
 
 ```text
-https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.1.1
+https://jitpack.io/#fallen-leaves089/spring-boot-jwt-starter/1.1.2
 ```
 
 发布到 Maven Central 需要仓库凭据、签名制品以及 source/javadoc jar。

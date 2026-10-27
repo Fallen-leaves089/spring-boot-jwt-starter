@@ -40,7 +40,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
-        String path = request.getRequestURI();
+        String path = requestPath(request);
 
         // ── 路径遍历攻击防护 ──
         if (containsTraversal(path)) {
@@ -102,6 +102,26 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the path relative to the servlet context so whitelist entries do
+     * not need to repeat {@code server.servlet.context-path}.
+     */
+    private String requestPath(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        if (uri == null || uri.isEmpty()) {
+            return "/";
+        }
+        String contextPath = request.getContextPath();
+        if (contextPath != null
+                && !contextPath.isEmpty()
+                && !"/".equals(contextPath)
+                && (uri.equals(contextPath) || uri.startsWith(contextPath + "/"))) {
+            String stripped = uri.substring(contextPath.length());
+            return stripped.isEmpty() ? "/" : stripped;
+        }
+        return uri;
     }
 
     /**

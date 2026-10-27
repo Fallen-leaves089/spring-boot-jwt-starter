@@ -1,6 +1,7 @@
 package io.github.fallenleaves089.jwt.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -20,15 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @AutoConfiguration
 @EnableConfigurationProperties(JwtProperties.class)
 @ConditionalOnProperty(prefix = "jwt", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class JwtAutoConfiguration implements WebMvcConfigurer {
-
-    private final AuthInterceptor authInterceptor;
-
-    public JwtAutoConfiguration(JwtProperties properties) {
-        JwtUtil jwtUtil = new JwtUtil(properties);
-        ObjectMapper objectMapper = new ObjectMapper();
-        this.authInterceptor = new AuthInterceptor(jwtUtil, properties, objectMapper);
-    }
+public class JwtAutoConfiguration {
 
     /**
      * 将 JwtUtil 暴露为 Bean，方便用户在业务代码中注入以生成 Token。
@@ -40,11 +33,27 @@ public class JwtAutoConfiguration implements WebMvcConfigurer {
     }
 
     /**
+     * 使用容器中的 JwtUtil 构建拦截器，允许用户通过自定义 Bean 替换 Token 实现。
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    public AuthInterceptor authInterceptor(JwtUtil jwtUtil, JwtProperties properties,
+                                           ObjectProvider<ObjectMapper> objectMapperProvider) {
+        ObjectMapper objectMapper = objectMapperProvider.getIfAvailable(ObjectMapper::new);
+        return new AuthInterceptor(jwtUtil, properties, objectMapper);
+    }
+
+    /**
      * 注册 AuthInterceptor 拦截所有路径（/**）。
      */
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(authInterceptor)
-                .addPathPatterns("/**");
+    @Bean
+    public WebMvcConfigurer jwtInterceptorConfigurer(AuthInterceptor authInterceptor) {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addInterceptors(InterceptorRegistry registry) {
+                registry.addInterceptor(authInterceptor)
+                        .addPathPatterns("/**");
+            }
+        };
     }
 }
