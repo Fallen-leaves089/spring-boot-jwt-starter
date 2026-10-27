@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JwtUtilTest {
@@ -64,5 +65,21 @@ class JwtUtilTest {
 
         assertNull(shortLived.parseToken(token));
         assertTrue(shortLived.isExpired(token));
+    }
+
+    @Test
+    void missingSecretShouldFailFast() {
+        properties.setSecret(null);
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> new JwtUtil(properties));
+        assertTrue(error.getMessage().contains("jwt.secret"));
+    }
+
+    @Test
+    void shortSecretShouldFailFast() {
+        properties.setSecret("too-short");
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> new JwtUtil(properties));
+        assertTrue(error.getMessage().contains("32 bytes"));
     }
 }

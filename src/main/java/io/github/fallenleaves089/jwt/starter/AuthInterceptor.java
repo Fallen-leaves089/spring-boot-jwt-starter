@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * JWT 鉴权拦截器 —— 拦截所有未在白名单中的请求，校验 Authorization 头中的 Token。
@@ -21,6 +24,8 @@ import java.util.Map;
  * </ul>
  */
 public class AuthInterceptor implements HandlerInterceptor {
+
+    private static final Pattern DOT_DOT_SEGMENT = Pattern.compile("(^|[/\\\\])\\.\\.([/\\\\]|$)");
 
     private final JwtUtil jwtUtil;
     private final JwtProperties properties;
@@ -38,7 +43,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         String path = request.getRequestURI();
 
         // ── 路径遍历攻击防护 ──
-        if (path.contains("../") || path.contains("..\\") || path.contains("%2e%2e")) {
+        if (containsTraversal(path)) {
             response.setStatus(400);
             response.setContentType("application/json;charset=utf-8");
             response.getWriter().write(objectMapper.writeValueAsString(
@@ -89,8 +94,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         List<String> excludePaths = properties.getExcludePaths();
         for (String pattern : excludePaths) {
             if (pattern.contains("*")) {
-                String regex = pattern.replace(".", "\\.").replace("*", ".*");
-                if (path.matches(regex)) {
+                if (matchesWildcard(pattern, path)) {
                     return true;
                 }
             } else if (path.equals(pattern)) {
@@ -98,6 +102,47 @@ public class AuthInterceptor implements HandlerInterceptor {
             }
         }
         return false;
+    }
+
+    /**
+     * Rejects dot-dot path segments after up to three rounds of percent-decoding.
+     * This covers mixed-case encodings and double-encoded traversal attempts while
+     * leaving other percent-encoded characters alone.
+     */
+    private boolean containsTraversal(String path) {
+        String current = path;
+        for (int i = 0; i < 3; i++) {
+            if (current.indexOf('\0') >= 0 || DOT_DOT_SEGMENT.matcher(current).find()) {
+                return true;
+            }
+            String decoded;
+            try {
+                decoded = UriUtils.decode(current, StandardCharsets.UTF_8);
+            } catch (IllegalArgumentException ex) {
+                return true;
+            }
+            if (decoded.equals(current)) {
+                return false;
+            }
+            current = decoded;
+        }
+        return DOT_DOT_SEGMENT.matcher(current).find();
+    }
+
+    /**
+     * Matches a whitelist pattern where {@code *} is the only wildcard.
+     * All other characters are treated literally, including regex metacharacters.
+     */
+    private boolean matchesWildcard(String pattern, String path) {
+        String[] parts = pattern.split("\\*", -1);
+        StringBuilder regex = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) {
+                regex.append(".*");
+            }
+            regex.append(Pattern.quote(parts[i]));
+        }
+        return path.matches(regex.toString());
     }
 
     /** 写入 401 响应，data.code 标明失败原因 */
