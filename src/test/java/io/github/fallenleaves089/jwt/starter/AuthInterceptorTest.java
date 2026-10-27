@@ -85,6 +85,42 @@ class AuthInterceptorTest {
         assertTrue(interceptor.preHandle(request, response, new Object()));
     }
 
+    @Test
+    void encodedTraversalShouldBeRejected() throws Exception {
+        for (String path : List.of(
+                "/%2e%2e/%2e%2e/etc/passwd",
+                "/%2E%2E/%2E%2E/etc/passwd",
+                "/..%2f..%2fetc%2fpasswd",
+                "/%252e%252e%252fetc%252fpasswd")) {
+            MockHttpServletRequest request = request(path);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            assertFalse(interceptor.preHandle(request, response, new Object()), path);
+            assertEquals(400, response.getStatus(), path);
+        }
+    }
+
+    @Test
+    void wildcardShouldTreatRegexCharactersLiterally() throws Exception {
+        properties.setExcludePaths(List.of("/api/v1/(public)+"));
+
+        MockHttpServletRequest matching = request("/api/v1/(public)+");
+        assertTrue(interceptor.preHandle(matching, new MockHttpServletResponse(), new Object()));
+
+        MockHttpServletRequest nonMatching = request("/api/v1/public");
+        MockHttpServletResponse nonMatchingResponse = new MockHttpServletResponse();
+        assertFalse(interceptor.preHandle(nonMatching, nonMatchingResponse, new Object()));
+        assertEquals(401, nonMatchingResponse.getStatus());
+    }
+
+    @Test
+    void wildcardShouldMatchSegments() throws Exception {
+        properties.setExcludePaths(List.of("/api/*/health"));
+
+        MockHttpServletRequest request = request("/api/v1/health");
+        assertTrue(interceptor.preHandle(request, new MockHttpServletResponse(), new Object()));
+    }
+
     private MockHttpServletRequest request(String path) {
         return new MockHttpServletRequest("GET", path);
     }

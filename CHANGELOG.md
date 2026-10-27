@@ -5,7 +5,19 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.1] - 2026-10-27
+
+### Security
+
+- `jwt.secret` must be at least 32 bytes; missing or short secrets fail fast with a clear message.
+- Path traversal checks decode percent-encoded paths up to three times and reject mixed-case and double-encoded dot-dot segments.
+- Whitelist wildcards now quote all non-`*` characters, so regex metacharacters are treated literally.
+
+### Fixed
+
+- Whitelist patterns containing regex metacharacters no longer throw or match unintended paths.
+
+## [1.1.0] - 2026-10-26
 
 ### Added
 
