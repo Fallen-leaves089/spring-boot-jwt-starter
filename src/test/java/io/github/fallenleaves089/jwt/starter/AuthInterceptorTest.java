@@ -121,6 +121,15 @@ class AuthInterceptorTest {
         assertTrue(interceptor.preHandle(request, new MockHttpServletResponse(), new Object()));
     }
 
+    @Test
+    void excludedPathShouldIgnoreContextPath() throws Exception {
+        properties.setExcludePaths(List.of("/api/login"));
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/app/api/login");
+        request.setContextPath("/app");
+
+        assertTrue(interceptor.preHandle(request, new MockHttpServletResponse(), new Object()));
+    }
+
     private MockHttpServletRequest request(String path) {
         return new MockHttpServletRequest("GET", path);
     }
