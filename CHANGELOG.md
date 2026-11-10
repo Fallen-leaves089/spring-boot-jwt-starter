@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Keep the starter on the maintained Spring Boot 3.5 line (`3.5.16`) so existing Spring Boot 3 consumers are not broken by an implicit major upgrade.
+
 ## [1.1.2] - 2026-10-27
 
 ### Fixed

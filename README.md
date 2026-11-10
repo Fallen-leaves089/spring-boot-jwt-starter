@@ -16,7 +16,7 @@ MIT License. Copyright (c) 2024 fallen-leaves089.
 
 - **Problem solved:** adds JWT authentication to a Spring MVC app without writing an interceptor.
 - **What you get:** token validation, explicit path whitelist, path-traversal rejection, distinct 401 reasons, and `userId` injection.
-- **Use it when:** you have a Spring Boot 3.2.x / Java 17 servlet app and want a small JWT layer.
+- **Use it when:** you have a Spring Boot 3.5.x / Java 17 servlet app and want a small JWT layer.
 - **Not for:** WebFlux/reactive apps, a complete user/login system, or distributed token revocation.
 
 ## Shortest demo
@@ -86,7 +86,7 @@ dependencies {
 }
 ```
 
-> Requires Spring Boot 3.2.x and Java 17.
+> Requires Spring Boot 3.5.x and Java 17.
 
 ---
 
