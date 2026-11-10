@@ -14,7 +14,7 @@ MIT License. Copyright (c) 2024 fallen-leaves089.
 
 - **解决什么**：给 Spring MVC 项目加一层轻量 JWT 鉴权，不用自己写拦截器。
 - **你能得到**：Token 校验、显式白名单、路径遍历防护、401 原因区分、`userId` 注入。
-- **适合**：Spring Boot 3.2.x / Java 17 的 Servlet 应用。
+- **适合**：Spring Boot 3.5.x / Java 17 的 Servlet 应用。
 - **不适合**：WebFlux/响应式应用、完整用户体系、分布式 Token 撤销。
 
 ## 最短演示
@@ -84,7 +84,7 @@ dependencies {
 }
 ```
 
-> 需要 Spring Boot 3.2.x + Java 17。
+> 需要 Spring Boot 3.5.x + Java 17。
 
 ---
 
