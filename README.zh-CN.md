@@ -40,6 +40,7 @@ Long userId = (Long) request.getAttribute("userId");
 - **零代码接入**：引入依赖，配置 `jwt.secret`，并在 `jwt.exclude-paths` 中列出公开路径
 - **自动 Token 校验**：拦截所有请求，白名单路径跳过，其余校验 Authorization 头
 - **感知 context-path**：`jwt.exclude-paths` 按应用内相对路径匹配，不需要重复 `server.servlet.context-path`
+- **令牌身份绑定**：可选配置 `jwt.issuer` / `jwt.audience`，拒绝其他服务签发的同名 Token
 - **可替换 Token 实现**：用户自定义的 `JwtUtil` Bean 会被拦截器直接复用，不再创建第二个实例
 - **路径遍历攻击防护**：最多进行三轮百分号解码，拒绝混合大小写和双重编码的 `..` 路径段
 - **密钥启动校验**：`jwt.secret` 缺失或不足 32 字节时启动直接失败，并给出明确提示
@@ -179,10 +180,14 @@ jwt:
   # Token 前缀，默认 "Bearer "
   token-prefix: "Bearer "
 
+  # 可选的 Token 签发者和受众；配置后会校验 Token 的 iss / aud 声明
+  issuer: "auth-service"
+  audience: "orders-api"
+
   # userId 在 request attribute 中的 key，默认 "userId"
   user-id-attribute: "userId"
 
-# 白名单路径（按应用内相对路径匹配，支持 * 通配符，其他字符按字面量处理），默认空；这些路径不校验 Token
+  # 白名单路径（按应用内相对路径匹配；* 匹配单个路径段，** 跨路径段，其他字符按字面量处理），默认空
   exclude-paths:
     - /api/login
     - /api/register

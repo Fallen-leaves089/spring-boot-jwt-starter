@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * 核心功能：
  * <ul>
  *   <li>路径遍历攻击防护（拒绝含 ../ 的路径）</li>
- *   <li>前缀匹配白名单（支持 * 通配符）</li>
+ *   <li>前缀匹配白名单（* 匹配单段，** 跨段）</li>
  *   <li>OPTIONS 预检请求自动放行</li>
  *   <li>Token 校验失败时按原因返回 TOKEN_MISSING / TOKEN_INVALID / TOKEN_EXPIRED</li>
  *   <li>校验通过后将 userId 注入 request attribute</li>
@@ -150,17 +150,27 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     /**
-     * Matches a whitelist pattern where {@code *} is the only wildcard.
-     * All other characters are treated literally, including regex metacharacters.
+     * Matches a whitelist pattern where {@code *} matches within one path
+     * segment and {@code **} matches across path segments. All other
+     * characters are treated literally, including regex metacharacters.
      */
     private boolean matchesWildcard(String pattern, String path) {
-        String[] parts = pattern.split("\\*", -1);
         StringBuilder regex = new StringBuilder();
-        for (int i = 0; i < parts.length; i++) {
-            if (i > 0) {
-                regex.append(".*");
+        int i = 0;
+        while (i < pattern.length()) {
+            if (pattern.charAt(i) == '*') {
+                int start = i;
+                while (i < pattern.length() && pattern.charAt(i) == '*') {
+                    i++;
+                }
+                regex.append(i - start >= 2 ? ".*" : "[^/]*");
+            } else {
+                int start = i;
+                while (i < pattern.length() && pattern.charAt(i) != '*') {
+                    i++;
+                }
+                regex.append(Pattern.quote(pattern.substring(start, i)));
             }
-            regex.append(Pattern.quote(parts[i]));
         }
         return path.matches(regex.toString());
     }

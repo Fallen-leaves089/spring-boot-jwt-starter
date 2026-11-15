@@ -18,13 +18,19 @@ public class JwtProperties {
     /** Token 过期时间（秒），默认 86400（24小时） */
     private long expiration = 86400;
 
+    /** Token 签发者（可选；配置后要求 Token 的 iss 匹配） */
+    private String issuer;
+
+    /** Token 受众（可选；配置后要求 Token 的 aud 匹配） */
+    private String audience;
+
     /** 存放 Token 的 HTTP 请求头名称，默认 Authorization */
     private String header = "Authorization";
 
     /** Token 前缀，默认 "Bearer "（注意末尾空格） */
     private String tokenPrefix = "Bearer ";
 
-    /** 不需要 JWT 鉴权的路径前缀列表（支持通配符 *） */
+    /** 不需要 JWT 鉴权的路径前缀列表（* 匹配单段，** 跨段） */
     private List<String> excludePaths = new ArrayList<>();
 
     /** JWT 解析后 userId 注入 request attribute 的 key，默认 "userId" */
@@ -46,6 +52,22 @@ public class JwtProperties {
 
     public void setExpiration(long expiration) {
         this.expiration = expiration;
+    }
+
+    public String getIssuer() {
+        return issuer;
+    }
+
+    public void setIssuer(String issuer) {
+        this.issuer = issuer;
+    }
+
+    public String getAudience() {
+        return audience;
+    }
+
+    public void setAudience(String audience) {
+        this.audience = audience;
     }
 
     public String getHeader() {
