@@ -42,6 +42,7 @@ See [Quick start](#quick-start) for a runnable controller and `curl` example.
 - **Zero-code integration**: add the dependency, set `jwt.secret`, and list public paths in `jwt.exclude-paths`.
 - **Automatic token validation**: intercepts all requests, skips whitelisted paths, and validates the `Authorization` header for the rest.
 - **Context-path aware**: `jwt.exclude-paths` entries are matched against the application-relative path, so they do not repeat `server.servlet.context-path`.
+- **Token audience binding**: optionally set `jwt.issuer` / `jwt.audience` to reject tokens issued for another service.
 - **Customizable token logic**: a user-defined `JwtUtil` bean is reused by the interceptor instead of creating a second instance.
 - **Path traversal protection**: rejects dot-dot path segments after up to three rounds of percent-decoding, including mixed-case and double-encoded forms.
 - **Secret validation**: startup fails fast with a clear message when `jwt.secret` is missing or shorter than 32 bytes.
@@ -181,11 +182,15 @@ jwt:
   # Token prefix. Default: "Bearer ".
   token-prefix: "Bearer "
 
+  # Optional token issuer and audience; when set, the iss / aud claims are verified.
+  issuer: "auth-service"
+  audience: "orders-api"
+
   # Request attribute key for userId. Default: "userId".
   user-id-attribute: "userId"
 
-# Whitelisted paths relative to the application context (supports * wildcards;
-# all other characters are literal). Default: empty. These paths skip token validation.
+  # Whitelisted paths relative to the application context (* matches one segment,
+  # ** matches across segments; all other characters are literal). Default: empty.
   exclude-paths:
     - /api/login
     - /api/register

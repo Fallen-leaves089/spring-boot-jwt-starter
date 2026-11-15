@@ -30,4 +30,16 @@ class JwtAutoConfigurationTest {
             assertEquals(99L, request.getAttribute("userId"));
         });
     }
+
+    @Test
+    void shouldBindIssuerAndAudience() {
+        runner.withPropertyValues(
+                        "jwt.issuer=auth-service",
+                        "jwt.audience=orders-api")
+                .run(context -> {
+                    JwtProperties properties = context.getBean(JwtProperties.class);
+                    assertEquals("auth-service", properties.getIssuer());
+                    assertEquals("orders-api", properties.getAudience());
+                });
+    }
 }

@@ -4,6 +4,8 @@ import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -81,5 +83,47 @@ class JwtUtilTest {
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> new JwtUtil(properties));
         assertTrue(error.getMessage().contains("32 bytes"));
+    }
+
+    @Test
+    void generatedTokenShouldContainConfiguredIssuerAndAudience() {
+        JwtUtil configured = newJwtUtil("auth-service", "orders-api");
+
+        String token = configured.generateToken(1001L, null);
+        Claims claims = configured.parseToken(token);
+
+        assertNotNull(claims);
+        assertEquals("auth-service", claims.getIssuer());
+        assertEquals(Set.of("orders-api"), claims.getAudience());
+    }
+
+    @Test
+    void configuredIdentityShouldRejectTokenForAnotherService() {
+        JwtUtil expected = newJwtUtil("auth-service", "orders-api");
+
+        JwtUtil wrongIssuer = newJwtUtil("other-auth-service", "orders-api");
+        assertNull(expected.parseToken(wrongIssuer.generateToken(1L, null)));
+
+        JwtUtil wrongAudience = newJwtUtil("auth-service", "other-api");
+        assertNull(expected.getUserId(wrongAudience.generateToken(1L, null)));
+    }
+
+    @Test
+    void configuredIdentityShouldRejectTokenWithoutIssuerOrAudience() {
+        JwtUtil expected = newJwtUtil("auth-service", "orders-api");
+        String tokenWithoutIdentity = jwtUtil.generateToken(1L, null);
+
+        assertNull(expected.parseToken(tokenWithoutIdentity));
+        assertNull(expected.getUserId(tokenWithoutIdentity));
+        assertFalse(expected.isExpired(tokenWithoutIdentity));
+    }
+
+    private JwtUtil newJwtUtil(String issuer, String audience) {
+        JwtProperties configured = new JwtProperties();
+        configured.setSecret(properties.getSecret());
+        configured.setExpiration(3600);
+        configured.setIssuer(issuer);
+        configured.setAudience(audience);
+        return new JwtUtil(configured);
     }
 }

@@ -7,9 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Optional `jwt.issuer` and `jwt.audience` settings; generated tokens include the configured `iss` / `aud` claims.
+
+### Security
+
+- When `jwt.issuer` or `jwt.audience` is configured, parsing, expiration checks, and `userId` extraction all require the corresponding claim and reject tokens issued for another service.
+
 ### Changed
 
 - Keep the starter on the maintained Spring Boot 3.5 line (`3.5.16`) so existing Spring Boot 3 consumers are not broken by an implicit major upgrade.
+- `jwt.exclude-paths` wildcard semantics are now explicit: `*` matches one path segment, `**` spans segments, and all other characters are literal. Patterns that intentionally crossed segments must switch to `**`.
 
 ## [1.1.2] - 2026-10-27
 

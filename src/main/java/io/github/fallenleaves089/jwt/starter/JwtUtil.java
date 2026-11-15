@@ -2,7 +2,10 @@ package io.github.fallenleaves089.jwt.starter;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.JwtParserBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -18,6 +21,9 @@ public class JwtUtil {
 
     private final SecretKey key;
     private final long expiration;
+    private final String issuer;
+    private final String audience;
+    private final JwtParser parser;
 
     public JwtUtil(JwtProperties properties) {
         String secret = properties.getSecret();
@@ -30,6 +36,17 @@ public class JwtUtil {
         }
         this.key = Keys.hmacShaKeyFor(secretBytes);
         this.expiration = properties.getExpiration() * 1000L;
+        this.issuer = normalizeIdentifier(properties.getIssuer());
+        this.audience = normalizeIdentifier(properties.getAudience());
+
+        JwtParserBuilder parserBuilder = Jwts.parser().verifyWith(key);
+        if (this.issuer != null) {
+            parserBuilder.requireIssuer(this.issuer);
+        }
+        if (this.audience != null) {
+            parserBuilder.requireAudience(this.audience);
+        }
+        this.parser = parserBuilder.build();
     }
 
     /**
@@ -41,13 +58,18 @@ public class JwtUtil {
      */
     public String generateToken(Long userId, String phone) {
         Date now = new Date();
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("phone", phone)
                 .issuedAt(now)
-                .expiration(new Date(now.getTime() + expiration))
-                .signWith(key)
-                .compact();
+                .expiration(new Date(now.getTime() + expiration));
+        if (issuer != null) {
+            builder.issuer(issuer);
+        }
+        if (audience != null) {
+            builder.audience().add(audience);
+        }
+        return builder.signWith(key).compact();
     }
 
     /**
@@ -55,12 +77,8 @@ public class JwtUtil {
      */
     public Claims parseToken(String token) {
         try {
-            return Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-        } catch (JwtException e) {
+            return parser.parseSignedClaims(token).getPayload();
+        } catch (JwtException | IllegalArgumentException e) {
             return null;
         }
     }
@@ -71,10 +89,7 @@ public class JwtUtil {
      */
     public boolean isExpired(String token) {
         try {
-            Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(stripPrefix(token));
+            parser.parseSignedClaims(stripPrefix(token));
             return false;
         } catch (ExpiredJwtException e) {
             return true;
@@ -114,5 +129,12 @@ public class JwtUtil {
             return token.substring(7);
         }
         return token;
+    }
+
+    private static String normalizeIdentifier(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 }

@@ -122,6 +122,25 @@ class AuthInterceptorTest {
     }
 
     @Test
+    void singleWildcardShouldNotCrossPathSegments() throws Exception {
+        properties.setExcludePaths(List.of("/api/sms/*"));
+
+        MockHttpServletRequest request = request("/api/sms/code/status");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        assertFalse(interceptor.preHandle(request, response, new Object()));
+        assertEquals(401, response.getStatus());
+    }
+
+    @Test
+    void doubleWildcardShouldCrossPathSegments() throws Exception {
+        properties.setExcludePaths(List.of("/api/public/**"));
+
+        MockHttpServletRequest request = request("/api/public/v1/health");
+        assertTrue(interceptor.preHandle(request, new MockHttpServletResponse(), new Object()));
+    }
+
+    @Test
     void excludedPathShouldIgnoreContextPath() throws Exception {
         properties.setExcludePaths(List.of("/api/login"));
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/app/api/login");
